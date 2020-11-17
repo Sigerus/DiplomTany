@@ -1,22 +1,32 @@
 package com.example.axelerometr;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -24,19 +34,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
     TextView msText;
     Button startlog;
     Button stoplog;
+    Button stop;
     SensorManager sensorManager;
     Sensor sensorAccel;
     Sensor sensorLinAccel;
     Sensor sensorGravity;
-
+    private Context mContext;
     final String LOG_TAG = "myLogs";
-    final String FILENAME = "file";
+    final String FILENAME = "file.txt";
     final String DIR_SD = "MyFiles";
-    final String FILENAME_SD = "fileSD";
-
+    final String FILENAME_SD = "fileSD1.txt";
+    private static final String FILE_PREFIX = "gnss_log";
     StringBuilder sb = new StringBuilder();
-
+    public static final String TAG = "GnssLogger";
     Timer timer;
+    Timer timerlog;
+    private BufferedWriter mFileWriter;
+    private File mFile;
+    private static final String COMMENT_START = "# ";
+    boolean stopbool;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +64,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         msText = findViewById(R.id.zolupa);
         startlog = findViewById(R.id.startlog);
         stoplog = findViewById(R.id.stoplog);
+        stop = findViewById(R.id.stop);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorLinAccel = sensorManager
@@ -54,7 +73,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         startlog.setOnClickListener(this);
         stoplog.setOnClickListener(this);
-
     }
 
     @Override
@@ -147,39 +165,142 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.startlog:
-                msText.setText("Текстовый файл создан\nИдёт запись логов");
-                writeFileSD();
-            break;
+                //msText.setText("Текстовый файл создан\nИдёт запись логов");
+                Start(view);
+                stopbool = false;
+                break;
             case R.id.stoplog:
-                msText.setText("Логи успешно записаны");
-            break;
+                Show(view);
+                //msText.setText("Логи успешно записаны");
+                break;
+            case R.id.stop:
+                stopbool = true;
+                //msText.setText("Логи успешно записаны");
+                break;
         }
     }
-    void writeFileSD() {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
-            return;
-        }
-        // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
-        // создаем каталог
-        sdPath.mkdirs();
-        // формируем объект File, который содержит путь к файлу
-        File sdFile = new File(sdPath, FILENAME_SD);
+
+
+
+    public void Start(View view) {
+        //String Text = "you got";
+        //final String Text = "Accelerometer: " + format(valuesAccel);
         try {
-            // открываем поток для записи
-            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
-            // пишем данные
-            bw.write("Содержимое файла на SD");
-            // закрываем поток
-            bw.close();
-            Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+            final FileOutputStream fileOutput = openFileOutput("Zolupa",MODE_PRIVATE);
+            timerlog = new Timer();
+            TimerTask tasklog = new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                fileOutput.write(format(valuesAccel).getBytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            };
+            timer.schedule(tasklog, 0, 400);
+           // for (int i = 0; i < 5; i++)
+            //    fileOutput.write(Text.getBytes());
+            if(stopbool)
+            fileOutput.close();
+            Toast.makeText(MainActivity.this,"Сохранение прошло успешно",Toast.LENGTH_LONG).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+    public void Show(View view) {
+        try {
+            FileInputStream fileInput = openFileInput("Zolupa");
+            InputStreamReader reader = new InputStreamReader(fileInput);
+            BufferedReader buffer = new BufferedReader(reader);
+            StringBuffer strBuffer = new StringBuffer();
+            String str;
+            while((str = buffer.readLine()) != null){
+                strBuffer.append(str).append("\n");
+            }
+            msText.setText(strBuffer.toString());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    /*
+    private void logError(String errorMessage) {
+        Log.e(MainActivity.TAG + TAG, errorMessage);
+        Toast.makeText(mContext, errorMessage, Toast.LENGTH_LONG).show();
+    }
+
+    private void logException(String errorMessage, Exception e) {
+        Log.e(MainActivity.TAG + TAG, errorMessage, e);
+        Toast.makeText(mContext, errorMessage, Toast.LENGTH_LONG).show();
+    }
+
+
+    void writeFileSD() {
+        File file;
+        String state=Environment.getExternalStorageState();
+        if(Environment.MEDIA_MOUNTED.equals(state)){
+            file= new File(Environment.getExternalStorageDirectory(),FILE_PREFIX);
+            file.mkdirs();
+        }else if(Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)){
+            logError(("Cannot write to external storage."));
+            return;
+        }else {
+            logError("Cannot read external storage.");
+            return;
+        }
+
+        SimpleDateFormat formatter=new SimpleDateFormat("yyy_MM_dd_HH_mm_ss");
+        Date now = new Date();
+        String fileName = String.format("%s_%s.txt", FILE_PREFIX, formatter.format(now));
+        File currentFile = new File(file, fileName);
+        String currentFilePath = currentFile.getAbsolutePath();
+        BufferedWriter currentFileWriter;
+        try {
+            currentFileWriter = new BufferedWriter(new FileWriter(currentFile));
+        } catch (IOException e) {
+            logException("Could not open file: " + currentFilePath, e);
+            return;
+        }
+        try{
+            currentFileWriter.write(COMMENT_START);
+            String fileVersion =
+                    mContext.getString(R.string.app_version)
+                            + " Platform: "
+                            + Build.VERSION.RELEASE
+                            + " "
+                            + "accel: "
+                            + format(valuesAccel)
+                            + " "
+                            + "gravity: "
+                            + format(valuesGravity);
+            currentFileWriter.write(fileVersion);
+            currentFileWriter.newLine();
+        }
+        catch (IOException e) {
+            logException("Count not initialize file: " + currentFilePath, e);
+            return;
+        }
+        if (mFileWriter != null) {
+            try {
+                mFileWriter.close();
+            } catch (IOException e) {
+                logException("Unable to close all file streams.", e);
+                return;
+            }
+        }
+
+
+
+    }
+
+*/
 }
