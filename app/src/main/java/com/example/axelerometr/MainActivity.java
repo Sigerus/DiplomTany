@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             myExternalFile = new File(getExternalFilesDir(filepath), filename);
-            myExternalFile2 = new File(getExternalFilesDir(filepath2), filename2);
         }
 
 
@@ -52,10 +51,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     FileOutputStream fos = new FileOutputStream(myExternalFile);
-
                     fos.write((A).getBytes());
                     fos.close();
-
+                    Toast.makeText(MainActivity.this,"Log created",Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
