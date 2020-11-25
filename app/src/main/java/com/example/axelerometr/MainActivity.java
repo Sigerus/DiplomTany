@@ -5,32 +5,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
+
 public class MainActivity extends AppCompatActivity {
 
-
-    private String filename = "SampleFile.txt";
-    private String filepath = "MyFileStorage";
-    File myExternalFile;
-    File myExternalFile2;
-    String myData = "";
-    private String filename2 = "SampleFile2.txt";
-    private String filepath2 = "MyFileStorage";
+    final String DIR_SD = "Logs";
+    final String FILENAME_SD = "fileSD.txt";
     Button saveButton;
-    String A = "pizdec";
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,36 +28,62 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.mainscreen);
         saveButton = findViewById(R.id.button2);
 
-        if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
+       /* if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
             saveButton.setEnabled(false);
         }
         else {
-            myExternalFile = new File(getExternalFilesDir(filepath), filename);
-        }
-
+            Logs = new File(getExternalFilesDir(filepath), FILENAME_SD);
+        }*/
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    FileOutputStream fos = new FileOutputStream(myExternalFile);
+                writeFileSD();
+                /*try {
+                    FileOutputStream fos = new FileOutputStream(Logs);
                     fos.write((A).getBytes());
                     fos.close();
                     Toast.makeText(MainActivity.this,"Log created",Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
 
             }
         });
 
 
 
+    }
 
 
-
-
-
+    void writeFileSD() {
+        // проверяем доступность SD
+        if (!Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)) {
+            //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+            Toast.makeText(MainActivity.this,"SD-карта не доступна: ",Toast.LENGTH_LONG).show();
+            return;
+        }
+        // получаем путь к SD
+        File sdPath = Environment.getExternalStorageDirectory();
+        // добавляем свой каталог к пути
+        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
+        // создаем каталог
+        sdPath.mkdirs();
+        // формируем объект File, который содержит путь к файлу
+        File sdFile = new File(sdPath, FILENAME_SD);
+        try {
+            // открываем поток для записи
+            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
+            // пишем данные
+            bw.write("Содержимое файла на SD");
+            // закрываем поток
+            bw.close();
+            //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+            Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /* public void onMyButtonClick(View view)
@@ -90,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
-
+/*
     private static boolean isExternalStorageReadOnly() {
         String extStorageState = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
@@ -106,9 +122,51 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+*/
+/*
+    SimpleDateFormat formatter=new SimpleDateFormat("yyy_MM_dd_HH_mm_ss");
+    Date now = new Date();
+    String fileName = String.format("%s_%s.txt", FILE_PREFIX, formatter.format(now));
+    File currentFile = new File(file, fileName);
+    String currentFilePath = currentFile.getAbsolutePath();
+    BufferedWriter currentFileWriter;
+        try {
+        currentFileWriter = new BufferedWriter(new FileWriter(currentFile));
+    } catch (IOException e) {
+        logException("Could not open file: " + currentFilePath, e);
+        return;
+    }
+        try{
+        currentFileWriter.write(COMMENT_START);
+        String fileVersion =
+                mContext.getString(R.string.app_version)
+                        + " Platform: "
+                        + Build.VERSION.RELEASE
+                        + " "
+                        + "accel: "
+                        + format(valuesAccel)
+                        + " "
+                        + "gravity: "
+                        + format(valuesGravity);
+        currentFileWriter.write(fileVersion);
+        currentFileWriter.newLine();
+    }
+        catch (IOException e) {
+        logException("Count not initialize file: " + currentFilePath, e);
+        return;
+    }
+        if (mFileWriter != null) {
+        try {
+            mFileWriter.close();
+        } catch (IOException e) {
+            logException("Unable to close all file streams.", e);
+            return;
+        }
+    }
+*/
 
 
-
+}
 
    /* public void saveNote() {
 
@@ -152,4 +210,4 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-}
+
