@@ -3,18 +3,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -33,23 +29,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Sensor sensorAccel;
     Sensor sensorLinAccel;
     Sensor sensorGravity;
-    private final Context mContext;
+
     final String LOG_TAG = "myLogs";
-    final String FILENAME = "file.txt";
+    final String FILENAME = "file";
     final String DIR_SD = "MyFiles";
-    final String FILENAME_SD = "fileSD1.txt";
-    private static final String FILE_PREFIX = "gnss_log";
+    final String FILENAME_SD = "fileSD";
+
     StringBuilder sb = new StringBuilder();
-    public static final String TAG = "GnssLogger";
+
     Timer timer;
-    private BufferedWriter mFileWriter;
-    private File mFile;
-
-
-    private static final String COMMENT_START = "# ";
-    public MainActivity(Context mContext) {
-        this.mContext = mContext;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,71 +156,33 @@ public class MainActivity extends Activity implements View.OnClickListener {
             break;
         }
     }
-    private void logError(String errorMessage) {
-        Log.e(MainActivity.TAG + TAG, errorMessage);
-        Toast.makeText(mContext, errorMessage, Toast.LENGTH_LONG).show();
-    }
-
-    private void logException(String errorMessage, Exception e) {
-        Log.e(MainActivity.TAG + TAG, errorMessage, e);
-        Toast.makeText(mContext, errorMessage, Toast.LENGTH_LONG).show();
-    }
-
-
     void writeFileSD() {
-       File file;
-       String state=Environment.getExternalStorageState();
-       if(Environment.MEDIA_MOUNTED.equals(state)){
-           file= new File(Environment.getExternalStorageDirectory(),FILE_PREFIX);
-           file.mkdirs();
-       }else if(Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)){
-           logError(("Cannot write to external storage."));
-           return;
-       }else {
-           logError("Cannot read external storage.");
-           return;
-       }
-
-        SimpleDateFormat formatter=new SimpleDateFormat("yyy_MM_dd_HH_mm_ss");
-        Date now = new Date();
-        String fileName = String.format("%s_%s.txt", FILE_PREFIX, formatter.format(now));
-        File currentFile = new File(file, fileName);
-        String currentFilePath = currentFile.getAbsolutePath();
-        BufferedWriter currentFileWriter;
+        // проверяем доступность SD
+        if (!Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)) {
+            //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+            Toast.makeText(MainActivity.this,"SD-карта не доступна: ",Toast.LENGTH_LONG).show();
+            return;
+        }
+        // получаем путь к SD
+        File sdPath = Environment.getExternalStorageDirectory();
+        // добавляем свой каталог к пути
+        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
+        // создаем каталог
+        sdPath.mkdirs();
+        // формируем объект File, который содержит путь к файлу
+        File sdFile = new File(sdPath, FILENAME_SD);
         try {
-            currentFileWriter = new BufferedWriter(new FileWriter(currentFile));
+            // открываем поток для записи
+            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
+            // пишем данные
+            bw.write("Содержимое файла на SD");
+            // закрываем поток
+            bw.close();
+            //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+            Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            logException("Could not open file: " + currentFilePath, e);
-            return;
+            e.printStackTrace();
         }
-        try{
-            currentFileWriter.write(COMMENT_START);
-            String fileVersion =
-                    mContext.getString(R.string.app_version)
-                            + " Platform: "
-                            + Build.VERSION.RELEASE
-                            + " "
-                            + "accel: "
-                            + format(valuesAccel)
-                            + " "
-                            + "gravity: "
-                            + format(valuesGravity);
-            currentFileWriter.write(fileVersion);
-            currentFileWriter.newLine();
-        }
-        catch (IOException e) {
-            logException("Count not initialize file: " + currentFilePath, e);
-            return;
-        }
-        if (mFileWriter != null) {
-            try {
-                mFileWriter.close();
-            } catch (IOException e) {
-                logException("Unable to close all file streams.", e);
-                return;
-            }
-        }
-
-
     }
 }
