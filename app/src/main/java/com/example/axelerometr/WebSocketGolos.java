@@ -22,6 +22,7 @@ import okhttp3.WebSocketListener;
 public class WebSocketGolos extends WebSocketListener {
 
     final String TAG = "ACTIVITY_log";
+    String[] txt;
     /*private Color parseColor(String Message){
         int Red = Integer.parseInt(Message.split(",")[0]);
         int Green = Integer.parseInt(Message.split(",")[1]);
@@ -59,6 +60,10 @@ public class WebSocketGolos extends WebSocketListener {
 
 
         getMeasurementsCallBack.callBackCall(text);
+        for (int i=0;i<30;i++){
+
+        }
+
     }
 
 }

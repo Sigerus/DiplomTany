@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.WebSocket;
 
@@ -35,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
     String A = "pizdec";
     private String text;
     private String[] text2;
-
+    Timer timer;
+    boolean flag=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,26 +66,9 @@ public class MainActivity extends AppCompatActivity {
         start_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                flag=true;
+                Toast.makeText(MainActivity.this, "Log Start", Toast.LENGTH_LONG).show();
                 // settext(text);
-                try {
-                   /* for (int i = 2; i < 30; i++) {
-                        text2[i] = text;
-                    }*/
-                    FileOutputStream fos = new FileOutputStream(myExternalFile);
-                    //fos.write(text).getBytes());
-
-                    //  fos.write(text.getBytes( ));
-
-
-
-                        fos.write((text + "\n").getBytes());
-                    
-
-                    fos.close();
-                    Toast.makeText(MainActivity.this, "Log created", Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
 
             }
@@ -93,15 +79,51 @@ public class MainActivity extends AppCompatActivity {
         stop_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                text2[0]="0";
-                if(text!=null){
-                for (int i=0;i<30;i++){
-
-                    text2[i]=text;
-                    }
-                }
+                flag=false;
+                Toast.makeText(MainActivity.this, "Log Stop", Toast.LENGTH_LONG).show();
             }
         });
+        try {
+
+                   /* for (int i = 2; i < 30; i++) {
+                        text2[i] = text;
+                    }*/
+            FileOutputStream fos = new FileOutputStream(myExternalFile);
+            //fos.write(text).getBytes());
+
+            //  fos.write(text.getBytes( ));
+            timer = new Timer();
+            if(flag=true) {
+              ////  if (text != null) {
+                    TimerTask task = new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        if (text != null) {
+                                            fos.write((text+ "\n").getBytes());
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    };
+                    timer.schedule(task, 0, 400);
+
+            //    }
+            }
+            if(flag=false) {
+                fos.close();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
