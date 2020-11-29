@@ -3,8 +3,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.hardware.Sensor;
@@ -29,15 +34,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Sensor sensorAccel;
     Sensor sensorLinAccel;
     Sensor sensorGravity;
+    Sensor sensorMagnetic_field;
 
-    final String LOG_TAG = "myLogs";
-    final String FILENAME = "file";
-    final String DIR_SD = "MyFiles";
-    final String FILENAME_SD = "fileSD";
+    boolean stop = false;
+    int period = 400;
+
+
+    final String DIR_SD = "Logs";
+
 
     StringBuilder sb = new StringBuilder();
 
     Timer timer;
+    Timer timer1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +61,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         sensorLinAccel = sensorManager
                 .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         sensorGravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        sensorMagnetic_field = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         startlog.setOnClickListener(this);
         stoplog.setOnClickListener(this);
@@ -66,6 +76,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         sensorManager.registerListener(listener, sensorLinAccel,
                 SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(listener, sensorGravity,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listener, sensorMagnetic_field,
                 SensorManager.SENSOR_DELAY_NORMAL);
 
         timer = new Timer();
@@ -92,6 +104,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     String format(float values[]) {
         return String.format("%1$.1f\t\t%2$.1f\t\t%3$.1f", values[0], values[1],
+                values[2]);
+    }
+
+
+
+    String Format(String Type, float values[])
+    {
+        Date currentDate = new Date();
+        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        String timeText = timeFormat.format(currentDate);
+        long nanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+        String time = String.valueOf(nanos);
+
+        return String.format("%1$.3s\t\t%2$.15s\t\t%3$.1f\t\t%4$.1f\t\t%5$.1f\n",Type, time, values[0], values[1],
                 values[2]);
     }
 
@@ -150,12 +176,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.startlog:
                // msText.setText("Текстовый файл создан\nИдёт запись логов");
                 writeFileSD();
+                stop = false;
             break;
+            case R.id.periodup:
+                period += 100;
+                break;
+            case R.id.perioddown:
+                period -= 100;
+                break;
             case R.id.stoplog:
+                stop = true;
                 //msText.setText("Логи успешно записаны");
             break;
         }
     }
+
     void writeFileSD() {
         // проверяем доступность SD
         if (!Environment.getExternalStorageState().equals(
@@ -171,16 +206,43 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // создаем каталог
         sdPath.mkdirs();
         // формируем объект File, который содержит путь к файлу
+        Date currentDate = new Date();
+        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        String timeText = timeFormat.format(currentDate);
+        String FILENAME_SD = timeText + ".txt";
         File sdFile = new File(sdPath, FILENAME_SD);
         try {
             // открываем поток для записи
-            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
+            final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
             // пишем данные
-            bw.write("Содержимое файла на SD");
+            bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
+            timer1 = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                bw.write(Format("ACL", valuesAccel));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            };
+            timer1.schedule(task, 0, period);
+            //bw.write(Format("ACL", valuesAccel));
+            //bw.write(Format("ACM", valuesAccelMotion));
+            //bw.write(Format("ACG", valuesAccelGravity));
+
             // закрываем поток
-            bw.close();
+            if(stop) {
+                bw.close();
+                Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
+            }
             //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
-            Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
