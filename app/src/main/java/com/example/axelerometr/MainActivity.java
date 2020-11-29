@@ -160,11 +160,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.startlog:
-                msText.setText("Текстовый файл создан\nИдёт запись логов");
+               // msText.setText("Текстовый файл создан\nИдёт запись логов");
                 writeFileSD();
             break;
             case R.id.stoplog:
-                msText.setText("Логи успешно записаны");
+                //msText.setText("Логи успешно записаны");
             break;
         }
     }
