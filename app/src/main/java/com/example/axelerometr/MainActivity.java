@@ -37,7 +37,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Sensor sensorMagnetic_field;
 
     boolean stop = false;
-    int period = 400;
+    int period = 1000;
 
 
     final String DIR_SD = "Logs";
@@ -92,7 +92,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 });
             }
         };
-        timer.schedule(task, 0, 400);
+        timer.schedule(task, 0, period);
+
+
     }
 
     @Override
@@ -186,10 +188,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.stoplog:
                 stop = true;
+                Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
                 //msText.setText("Логи успешно записаны");
             break;
         }
     }
+
+
+
 
     void writeFileSD() {
         // проверяем доступность SD
@@ -205,6 +211,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
         // создаем каталог
         sdPath.mkdirs();
+        Toast.makeText(MainActivity.this,"Папка создана",Toast.LENGTH_LONG).show();
         // формируем объект File, который содержит путь к файлу
         Date currentDate = new Date();
         DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
@@ -216,35 +223,48 @@ public class MainActivity extends Activity implements View.OnClickListener {
             final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
             // пишем данные
             bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
-            timer1 = new Timer();
-            TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                bw.write(Format("ACL", valuesAccel));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                }
-            };
-            timer1.schedule(task, 0, period);
-            //bw.write(Format("ACL", valuesAccel));
-            //bw.write(Format("ACM", valuesAccelMotion));
-            //bw.write(Format("ACG", valuesAccelGravity));
+            Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
 
+            //for(int i = 0; i < 5; i++) {
+                for(int i = 0; i < 1000; i++) {
+                    bw.write(Format("ACL", valuesAccel));
+                    bw.write(Format("ACM", valuesAccelMotion));
+                    bw.write(Format("ACG", valuesAccelGravity));
+                }
+           // }
             // закрываем поток
-            if(stop) {
-                bw.close();
-                Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
-            }
+            //bw.write("ты еблан\n");
+            bw.close();
+            Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
             //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
+
+/*
+try {
+final FileOutputStream fileOutput = openFileOutput("Zolupa",MODE_PRIVATE);
+        timerlog = new Timer();
+        TimerTask tasklog = new TimerTask() {
+@Override
+public void run() {
+        runOnUiThread(new Runnable() {
+@Override
+public void run() {
+        try {
+        fileOutput.write(format(valuesAccel).getBytes());
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
+        }
+        });
+        }
+        };
+        timer.schedule(tasklog, 0, 400);
+        // for (int i = 0; i < 5; i++)
+        //    fileOutput.write(Text.getBytes());
+        if(stopbool)
+        fileOutput.close();*/
