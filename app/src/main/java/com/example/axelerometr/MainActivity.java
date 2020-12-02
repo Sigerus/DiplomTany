@@ -235,7 +235,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             // закрываем поток
             //bw.write("ты еблан\n");
             bw.close();
-            Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
             //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
             //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
         } catch (IOException e) {
