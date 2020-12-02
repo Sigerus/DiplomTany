@@ -9,10 +9,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String filename = "SampleFile.txt";
     private String filepath = "MyFileStorage";
+    private String DIR_SD = "Logs";
     File myExternalFile;
     File myExternalFile2;
     String myData = "";
@@ -38,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private String text;
     private String[] text2;
     Timer timer;
+
     boolean flag=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 flag=true;
+                writeFileSD();
                 Toast.makeText(MainActivity.this, "Log Start", Toast.LENGTH_LONG).show();
                 // settext(text);
 
@@ -83,11 +92,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Log Stop", Toast.LENGTH_LONG).show();
             }
         });
-        try {
+      /*  try {
 
-                   /* for (int i = 2; i < 30; i++) {
-                        text2[i] = text;
-                    }*/
+
             FileOutputStream fos = new FileOutputStream(myExternalFile);
             //fos.write(text).getBytes());
 
@@ -122,13 +129,46 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-
+        }*/
     }
 
+    void writeFileSD() {
+        // проверяем доступность SD
+        if (!Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)) {
+            //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+            Toast.makeText(MainActivity.this, "SD-карта не доступна: ", Toast.LENGTH_LONG).show();
+            return;
+        }
+        // получаем путь к SD
+        File sdPath = Environment.getExternalStorageDirectory();
+        // добавляем свой каталог к пути
+        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
+        // создаем каталог
+        sdPath.mkdirs();
+        Toast.makeText(MainActivity.this, "Папка создана", Toast.LENGTH_LONG).show();
+        // формируем объект File, который содержит путь к файлу
+        Date currentDate = new Date();
+        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        String timeText = timeFormat.format(currentDate);
+        String FILENAME_SD = timeText + ".txt";
+        File sdFile = new File(sdPath, FILENAME_SD);
+        try {
+            // открываем поток для записи
+            final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
+            // пишем данные
+            Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
+            for (int i = 0; i < 100; i++)
+                bw.write(String.valueOf((text + "\n").getBytes()));
+            bw.close();
+            //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
+            //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+    }
     public void settext(String text) {
 
 
