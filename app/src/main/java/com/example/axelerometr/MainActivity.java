@@ -18,6 +18,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,8 +39,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     boolean stop = false;
     int period = 1000;
-
-
+    private BufferedWriter mFileWriter;
+    private final Object mFileLock = new Object();
     final String DIR_SD = "Logs";
 
 
@@ -149,22 +150,36 @@ public class MainActivity extends Activity implements View.OnClickListener {
         public void onSensorChanged(SensorEvent event) {
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    for (int i = 0; i < 3; i++) {
+                    synchronized (mFileLock) {
+                        String accelStream = String.format("%s%s%s%s%s", "ACC ", SystemClock.elapsedRealtimeNanos() + " ", event.values[0] + " ", event.values[1] + " ", event.values[2]);
+                        try {
+                            if (mFileWriter == null) {
+                                return;
+                            }
+                            mFileWriter.write(accelStream);
+                            mFileWriter.newLine();
+
+                        } catch (IOException e) {
+                            Log.e("pizda", String.valueOf(e));
+                        }
+                    }
+
+                    /*for (int i = 0; i < 3; i++) {
                         valuesAccel[i] = event.values[i];
                         valuesAccelGravity[i] = (float) (0.1 * event.values[i] + 0.9 * valuesAccelGravity[i]);
                         valuesAccelMotion[i] = event.values[i]
                                 - valuesAccelGravity[i];
-                    }
+                    }*/
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
-                    for (int i = 0; i < 3; i++) {
-                        valuesLinAccel[i] = event.values[i];
-                    }
+//                    for (int i = 0; i < 3; i++) {
+//                        valuesLinAccel[i] = event.values[i];
+//                    }
                     break;
                 case Sensor.TYPE_GRAVITY:
-                    for (int i = 0; i < 3; i++) {
-                        valuesGravity[i] = event.values[i];
-                    }
+//                    for (int i = 0; i < 3; i++) {
+//                        valuesGravity[i] = event.values[i];
+//                    }
                     break;
             }
 
@@ -195,50 +210,75 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mFileWriter != null) {
+            try {
+                mFileWriter.flush();
+                mFileWriter.close();
+                mFileWriter = null;
+            } catch (IOException e) {
+                //logException("Unable to close all file streams.", e);
+                return;
+            }
+        }
+    }
 
     void writeFileSD() {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
-            Toast.makeText(MainActivity.this,"SD-карта не доступна: ",Toast.LENGTH_LONG).show();
-            return;
-        }
-        // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
-        // создаем каталог
-        sdPath.mkdirs();
-        Toast.makeText(MainActivity.this,"Папка создана",Toast.LENGTH_LONG).show();
-        // формируем объект File, который содержит путь к файлу
-        Date currentDate = new Date();
-        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        String timeText = timeFormat.format(currentDate);
-        String FILENAME_SD = timeText + ".txt";
-        File sdFile = new File(sdPath, FILENAME_SD);
-        try {
-            // открываем поток для записи
-            final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
-            // пишем данные
-            bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
-            Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
+        synchronized (mFileLock) {
+            // проверяем доступность SD
+            if (!Environment.getExternalStorageState().equals(
+                    Environment.MEDIA_MOUNTED)) {
+                //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+                Toast.makeText(MainActivity.this, "SD-карта не доступна: ", Toast.LENGTH_LONG).show();
+                return;
+            }
+            // получаем путь к SD
+            File sdPath = Environment.getExternalStorageDirectory();
+            // добавляем свой каталог к пути
+            sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
+            // создаем каталог
+            sdPath.mkdirs();
+            Toast.makeText(MainActivity.this, "Папка создана", Toast.LENGTH_LONG).show();
+            // формируем объект File, который содержит путь к файлу
+            Date currentDate = new Date();
+            DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            String timeText = timeFormat.format(currentDate);
+            String FILENAME_SD = timeText + ".txt";
+            File sdFile = new File(sdPath, FILENAME_SD);
+            try {
+                // открываем поток для записи
+                final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
 
-            //for(int i = 0; i < 5; i++) {
-                for(int i = 0; i < 1000; i++) {
+                // пишем данные
+                bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
+                Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
+
+                //for(int i = 0; i < 5; i++) {
+             /*   for(int i = 0; i < 1000; i++) {
                     bw.write(Format("ACL", valuesAccel));
                     bw.write(Format("ACM", valuesAccelMotion));
                     bw.write(Format("ACG", valuesAccelGravity));
+                }*/
+                // }
+                // закрываем поток
+                //bw.write("ты еблан\n");
+                //bw.close();
+                //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
+                //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+                if (mFileWriter != null) {
+                    try {
+                        mFileWriter.close();
+                    } catch (IOException e) {
+                        // logException("Unable to close all file streams.", e);
+                        return;
+                    }
                 }
-           // }
-            // закрываем поток
-            //bw.write("ты еблан\n");
-            bw.close();
-            //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
-            //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
+                mFileWriter = bw;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
