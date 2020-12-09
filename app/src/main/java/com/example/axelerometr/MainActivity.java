@@ -2,6 +2,7 @@ package com.example.axelerometr;
 
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String filename = "SampleFile.txt";
     private String filepath = "MyFileStorage";
-    private String DIR_SD = "Logs";
+
     File myExternalFile;
     File myExternalFile2;
     String myData = "";
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private String text;
     private String[] text2;
     Timer timer;
+    private BufferedWriter mFileWriter;
+    private final Object mFileLock = new Object();
+    final String DIR_SD = "Logs";
 
     boolean flag=false;
     @Override
@@ -53,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         start_btn = findViewById(R.id.button_start);
         stop_btn = findViewById(R.id.button_stop);
+
 
         Connect();
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
@@ -131,48 +136,95 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }*/
     }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mFileWriter != null) {
+            try {
+                mFileWriter.flush();
+                mFileWriter.close();
+                mFileWriter = null;
+            } catch (IOException e) {
+                //logException("Unable to close all file streams.", e);
+                return;
+            }
+        }
+    }
 
     void writeFileSD() {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
-            Toast.makeText(MainActivity.this, "SD-карта не доступна: ", Toast.LENGTH_LONG).show();
-            return;
-        }
-        // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
-        // создаем каталог
-        sdPath.mkdirs();
-        Toast.makeText(MainActivity.this, "Папка создана", Toast.LENGTH_LONG).show();
-        // формируем объект File, который содержит путь к файлу
-        Date currentDate = new Date();
-        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        String timeText = timeFormat.format(currentDate);
-        String FILENAME_SD = timeText + ".txt";
-        File sdFile = new File(sdPath, FILENAME_SD);
-        try {
-            // открываем поток для записи
-            final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
-            // пишем данные
-            Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
-            for (int i = 0; i < 100; i++)
-                bw.write(String.valueOf((text + "\n").getBytes()));
-            bw.close();
-            //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
-            //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+        synchronized (mFileLock) {
+            // проверяем доступность SD
+            if (!Environment.getExternalStorageState().equals(
+                    Environment.MEDIA_MOUNTED)) {
+                //Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+                Toast.makeText(MainActivity.this, "SD-карта не доступна: ", Toast.LENGTH_LONG).show();
+                return;
+            }
+            // получаем путь к SD
+            File sdPath = Environment.getExternalStorageDirectory();
+            // добавляем свой каталог к пути
+            sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
+            // создаем каталог
+            sdPath.mkdirs();
+            Toast.makeText(MainActivity.this, "Папка создана", Toast.LENGTH_LONG).show();
+            // формируем объект File, который содержит путь к файлу
+            Date currentDate = new Date();
+            DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            String timeText = timeFormat.format(currentDate);
+            String FILENAME_SD = timeText + ".txt";
+            File sdFile = new File(sdPath, FILENAME_SD);
+            try {
+                // открываем поток для записи
+                final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                // пишем данные
+                bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
+                Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
 
+                //for(int i = 0; i < 5; i++) {
+             /*   for(int i = 0; i < 1000; i++) {
+                    bw.write(Format("ACL", valuesAccel));
+                    bw.write(Format("ACM", valuesAccelMotion));
+                    bw.write(Format("ACG", valuesAccelGravity));
+                }*/
+                // }
+                // закрываем поток
+                //bw.write("ты еблан\n");
+                //bw.close();
+                //Toast.makeText(MainActivity.this,"Прошёл мимо ",Toast.LENGTH_LONG).show();
+                //Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+                if (mFileWriter != null) {
+                    try {
+                        mFileWriter.close();
+                    } catch (IOException e) {
+                        // logException("Unable to close all file streams.", e);
+                        return;
+                    }
+                }
+                mFileWriter = bw;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
     public void settext(String text) {
 
 
-        this.text = text;
+       // this.text = text;
+        synchronized (mFileLock) {
+            String serverLog = String.format("%s%s%s", "server ", SystemClock.elapsedRealtimeNanos() + " ", text );
+            try {
+                if (mFileWriter == null) {
+                    return;
+                }
+                mFileWriter.write(serverLog);
+                mFileWriter.newLine();
+
+            } catch (IOException e) {
+                Log.e("pizda", String.valueOf(e));
+            }
+        }
+
         // text2[i]=text;
     }
 
