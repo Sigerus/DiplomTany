@@ -40,7 +40,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Sensor magnetometer;
     //private SensorManager mSensorManager;
     private Sensor sensorGyroscopeEirler;
-    private ImageView im;
+    private Sensor sensorGyroscope;
+    private ImageView iv;
     private TextView tv;
 
 
@@ -65,9 +66,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         startlog = findViewById(R.id.startlog);
         stoplog = findViewById(R.id.stoplog);
         tv = findViewById(R.id.tv);
-        im = findViewById(R.id.im);
+        iv = findViewById(R.id.iv);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         sensorLinAccel = sensorManager
                 .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         sensorGyroscopeEirler = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -96,6 +98,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         sensorManager.registerListener(listener, sensorMagnetic_field,
                 SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(listener, magnetometer,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listener, sensorGyroscope,
                 SensorManager.SENSOR_DELAY_NORMAL);
 
        /* timer = new Timer();
@@ -167,7 +173,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         @Override
         public void onSensorChanged(SensorEvent event) {
             switch (event.sensor.getType()) {
-                /*case Sensor.TYPE_ACCELEROMETER:
+                case Sensor.TYPE_ACCELEROMETER:
                     synchronized (mFileLock) {
                         String accelStream = String.format("%s%s%s%s%s", "ACC ", SystemClock.elapsedRealtimeNanos() + " ", event.values[0] + " ", event.values[1] + " ", event.values[2]);
                         try {
@@ -182,17 +188,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                     }
 
-                    *//*for (int i = 0; i < 3; i++) {
+                    /*for (int i = 0; i < 3; i++) {
                         valuesAccel[i] = event.values[i];
                         valuesAccelGravity[i] = (float) (0.1 * event.values[i] + 0.9 * valuesAccelGravity[i]);
                         valuesAccelMotion[i] = event.values[i]
                                 - valuesAccelGravity[i];
-                    }*//*
-                    break;*/
-                case Sensor.TYPE_LINEAR_ACCELERATION:
-//                    for (int i = 0; i < 3; i++) {
-//                        valuesLinAccel[i] = event.values[i];
-//                    }
+                    }*/
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    synchronized (mFileLock) {
+                        String GYRStream = String.format("%s%s%s%s%s", "GYR ", SystemClock.elapsedRealtimeNanos() + " ", event.values[0] + " ", event.values[1] + " ", event.values[2]);
+                        try {
+                            if (mFileWriter == null) {
+                                return;
+                            }
+                            mFileWriter.write(GYRStream);
+                            mFileWriter.newLine();
+                        } catch (IOException e) {
+                            Log.e("pizda", String.valueOf(e));
+                        }
+                    }
                     break;
                 case Sensor.TYPE_GRAVITY:
 //                    for (int i = 0; i < 3; i++) {
@@ -230,10 +245,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             orientations[i] = (float)(Math.toDegrees(orientations[i]));
                         }
                         tv.setText(String.valueOf((int)orientations[2]));
-                        im.setRotation(-orientations[2]);
+                        iv.setRotation(-orientations[2]);
 
 
-                        String RotStream = String.format("%s%s%s%s%s", "GYR ", SystemClock.elapsedRealtimeNanos() + " ", orientations[0] + " ", orientations[1] + " ", orientations[2]);
+                        String RotStream = String.format("%s%s%s%s%s", "EYR ", SystemClock.elapsedRealtimeNanos() + " ", orientations[0] + " ", orientations[1] + " ", orientations[2]);
                         try {
                             if (mFileWriter == null) {
                                 return;
