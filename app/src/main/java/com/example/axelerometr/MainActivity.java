@@ -37,8 +37,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Sensor sensorGravity;
     Sensor sensorMagnetic_field;
 
-    boolean stop = false;
-    int period = 1000;
+    int period = 400;
     private BufferedWriter mFileWriter;
     private final Object mFileLock = new Object();
     final String DIR_SD = "Logs";
@@ -193,7 +192,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.startlog:
                // msText.setText("Текстовый файл создан\nИдёт запись логов");
                 writeFileSD();
-                stop = false;
             break;
             case R.id.periodup:
                 period += 100;
@@ -202,8 +200,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 period -= 100;
                 break;
             case R.id.stoplog:
-                stop = true;
-                Toast.makeText(MainActivity.this,"Файл записан на SD: ",Toast.LENGTH_LONG).show();
+                onStop();
+                Toast.makeText(MainActivity.this,"Логи записаны ",Toast.LENGTH_LONG).show();
                 //msText.setText("Логи успешно записаны");
             break;
         }
@@ -240,7 +238,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
             // создаем каталог
             sdPath.mkdirs();
-            Toast.makeText(MainActivity.this, "Папка создана", Toast.LENGTH_LONG).show();
+           //Toast.makeText(MainActivity.this, "Папка создана", Toast.LENGTH_LONG).show();
             // формируем объект File, который содержит путь к файлу
             Date currentDate = new Date();
             DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
@@ -253,7 +251,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 // пишем данные
                 bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
-                Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Производится запись логов", Toast.LENGTH_LONG).show();
 
                 //for(int i = 0; i < 5; i++) {
              /*   for(int i = 0; i < 1000; i++) {
