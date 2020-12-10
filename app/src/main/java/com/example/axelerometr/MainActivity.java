@@ -22,12 +22,13 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
-    TextView tvText;
+    //TextView tvText;
     TextView msText;
     Button startlog;
     Button stoplog;
@@ -36,6 +37,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Sensor sensorLinAccel;
     Sensor sensorGravity;
     Sensor sensorMagnetic_field;
+    private Sensor magnetometer;
+    //private SensorManager mSensorManager;
+    private Sensor sensorGyroscopeEirler;
+    private ImageView im;
+    private TextView tv;
+
+
 
     int period = 400;
     private BufferedWriter mFileWriter;
@@ -52,16 +60,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainscreen);
-        tvText = findViewById(R.id.tvText);
+        //tvText = findViewById(R.id.tvText);
         msText = findViewById(R.id.zolupa);
         startlog = findViewById(R.id.startlog);
         stoplog = findViewById(R.id.stoplog);
+        tv = findViewById(R.id.tv);
+        im = findViewById(R.id.im);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorLinAccel = sensorManager
                 .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        sensorGyroscopeEirler = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         sensorGravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         sensorMagnetic_field = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        magnetometer = sensorManager
+                .getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        if (null == magnetometer)
+            finish();
 
         startlog.setOnClickListener(this);
         stoplog.setOnClickListener(this);
@@ -79,8 +95,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(listener, sensorMagnetic_field,
                 SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listener, magnetometer,
+                SensorManager.SENSOR_DELAY_NORMAL);
 
-        timer = new Timer();
+       /* timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
@@ -92,7 +110,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 });
             }
         };
-        timer.schedule(task, 0, period);
+        timer.schedule(task, 0, period);*/
 
 
     }
@@ -104,14 +122,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         timer.cancel();
     }
 
-    String format(float values[]) {
+    /*String format(float values[]) {
         return String.format("%1$.1f\t\t%2$.1f\t\t%3$.1f", values[0], values[1],
                 values[2]);
-    }
+    }*/
 
 
 
-    String Format(String Type, float values[])
+   /* String Format(String Type, float values[])
     {
         Date currentDate = new Date();
         DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
@@ -131,13 +149,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 .append("\n\nLin accel : " + format(valuesLinAccel))
                 .append("\nGravity : " + format(valuesGravity));
         tvText.setText(sb);
-    }
+    }*/
 
     float[] valuesAccel = new float[3];
     float[] valuesAccelMotion = new float[3];
     float[] valuesAccelGravity = new float[3];
     float[] valuesLinAccel = new float[3];
     float[] valuesGravity = new float[3];
+    private float[] mGeomagnetic = new float[3];;
 
     SensorEventListener listener = new SensorEventListener() {
 
@@ -148,7 +167,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         @Override
         public void onSensorChanged(SensorEvent event) {
             switch (event.sensor.getType()) {
-                case Sensor.TYPE_ACCELEROMETER:
+                /*case Sensor.TYPE_ACCELEROMETER:
                     synchronized (mFileLock) {
                         String accelStream = String.format("%s%s%s%s%s", "ACC ", SystemClock.elapsedRealtimeNanos() + " ", event.values[0] + " ", event.values[1] + " ", event.values[2]);
                         try {
@@ -163,13 +182,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                     }
 
-                    /*for (int i = 0; i < 3; i++) {
+                    *//*for (int i = 0; i < 3; i++) {
                         valuesAccel[i] = event.values[i];
                         valuesAccelGravity[i] = (float) (0.1 * event.values[i] + 0.9 * valuesAccelGravity[i]);
                         valuesAccelMotion[i] = event.values[i]
                                 - valuesAccelGravity[i];
-                    }*/
-                    break;
+                    }*//*
+                    break;*/
                 case Sensor.TYPE_LINEAR_ACCELERATION:
 //                    for (int i = 0; i < 3; i++) {
 //                        valuesLinAccel[i] = event.values[i];
@@ -179,6 +198,53 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //                    for (int i = 0; i < 3; i++) {
 //                        valuesGravity[i] = event.values[i];
 //                    }
+                    break;
+                case Sensor.TYPE_MAGNETIC_FIELD:
+                    synchronized (mFileLock) {
+                        String magneticStream = String.format("%s%s%s%s%s", "MAG ", SystemClock.elapsedRealtimeNanos() + " ", event.values[0] + " ", event.values[1] + " ", event.values[2]);
+                        try {
+                            if (mFileWriter == null) {
+                                return;
+                            }
+                            mFileWriter.write(magneticStream);
+                            mFileWriter.newLine();
+
+                        } catch (IOException e) {
+                            Log.e("pizda", String.valueOf(e));
+                        }
+                    }
+                    break;
+                case Sensor.TYPE_ROTATION_VECTOR:
+                    synchronized (mFileLock) {
+                        float[] rotationMatrix = new float[16];
+                        SensorManager.getRotationMatrixFromVector(
+                                rotationMatrix, event.values);
+                        float[] remappedRotationMatrix = new float[16];
+                        SensorManager.remapCoordinateSystem(rotationMatrix,
+                                SensorManager.AXIS_X,
+                                SensorManager.AXIS_Z,
+                                remappedRotationMatrix);
+                        float[] orientations = new float[3];
+                        SensorManager.getOrientation(remappedRotationMatrix, orientations);
+                        for(int i = 0; i < 3; i++) {
+                            orientations[i] = (float)(Math.toDegrees(orientations[i]));
+                        }
+                        tv.setText(String.valueOf((int)orientations[2]));
+                        im.setRotation(-orientations[2]);
+
+
+                        String RotStream = String.format("%s%s%s%s%s", "GYR ", SystemClock.elapsedRealtimeNanos() + " ", orientations[0] + " ", orientations[1] + " ", orientations[2]);
+                        try {
+                            if (mFileWriter == null) {
+                                return;
+                            }
+                            mFileWriter.write(RotStream);
+                            mFileWriter.newLine();
+
+                        } catch (IOException e) {
+                            Log.e("pizda", String.valueOf(e));
+                        }
+                    }
                     break;
             }
 
