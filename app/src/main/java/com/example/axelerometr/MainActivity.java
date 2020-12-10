@@ -43,6 +43,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Sensor sensorGyroscope;
     private ImageView iv;
     private TextView tv;
+    private TextView speed;
 
 
 
@@ -67,6 +68,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         stoplog = findViewById(R.id.stoplog);
         tv = findViewById(R.id.tv);
         iv = findViewById(R.id.iv);
+        speed = findViewById(R.id.speed);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -104,6 +106,35 @@ public class MainActivity extends Activity implements View.OnClickListener {
         sensorManager.registerListener(listener, sensorGyroscope,
                 SensorManager.SENSOR_DELAY_NORMAL);
 
+
+        timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        sensorManager.registerListener(listener, sensorAccel,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                        sensorManager.registerListener(listener, sensorLinAccel,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                        sensorManager.registerListener(listener, sensorGravity,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                        sensorManager.registerListener(listener, sensorMagnetic_field,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                        sensorManager.registerListener(listener, magnetometer,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                        sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                        sensorManager.registerListener(listener, sensorGyroscope,
+                                SensorManager.SENSOR_DELAY_NORMAL);
+                    }
+                });
+            }
+        };
+        timer.schedule(task, 0, period);
+        speed.setText(String.valueOf(period));
+
        /* timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
@@ -119,6 +150,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         timer.schedule(task, 0, period);*/
 
 
+    }
+
+    void increasePeriod()
+    {
+        period += 100;
+    }
+    void decreasePeriod()
+    {
+        period -= 100;
     }
 
     @Override
@@ -275,10 +315,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 writeFileSD();
             break;
             case R.id.periodup:
-                period += 100;
+                increasePeriod();
                 break;
             case R.id.perioddown:
-                period -= 100;
+                decreasePeriod();
                 break;
             case R.id.stoplog:
                 onStop();
@@ -303,6 +343,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }
     }
+
+
 
     void writeFileSD() {
         synchronized (mFileLock) {
