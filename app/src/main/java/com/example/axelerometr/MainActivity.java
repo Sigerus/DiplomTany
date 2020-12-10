@@ -177,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 // открываем поток для записи
                 final BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
 
+
                 // пишем данные
                 bw.write("# Type,ElapsedRealtimeNanos,xAcceleration,yAcceleration,zAcceleration\n");
                 Toast.makeText(MainActivity.this, "шапка", Toast.LENGTH_LONG).show();
