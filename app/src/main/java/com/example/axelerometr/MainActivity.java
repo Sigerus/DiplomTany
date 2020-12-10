@@ -26,8 +26,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+import okhttp3.WebSocket;
 
+public class MainActivity extends Activity implements View.OnClickListener {
+    public static WebSocket _ws;
+    public static SocketManager sm;
+    final String TAG = "ACTIVITY_STATEecc";
     //TextView tvText;
     TextView msText;
     Button startlog;
@@ -85,7 +89,36 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         startlog.setOnClickListener(this);
         stoplog.setOnClickListener(this);
+        Log.d(TAG, String.valueOf(_ws));
+        WebSocketGolos.getMeasurementsCallBack = this::settext;
+        Connect();
 
+    }
+
+    public void settext(String text) {
+
+
+        // this.text = text;
+        synchronized (mFileLock) {
+            String serverLog = String.format("%s%s%s", "server ", SystemClock.elapsedRealtimeNanos() + " ", text );
+            try {
+                if (mFileWriter == null) {
+                    return;
+                }
+                mFileWriter.write(serverLog);
+                mFileWriter.newLine();
+
+            } catch (IOException e) {
+                Log.e("pizda", String.valueOf(e));
+            }
+        }
+
+        // text2[i]=text;
+    }
+
+    public void Connect() {
+        sm = new SocketManager();
+        _ws = sm.Connect();
     }
 
     @Override
@@ -400,8 +433,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+            }
     }
+
+
+
+
 }
 
 /*
