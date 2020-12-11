@@ -13,7 +13,7 @@ public class SocketManager {
     {
         OkHttpClient client = new OkHttpClient.Builder().build();
         Request request = new Request.Builder()
-                .url("ws://192.168.0.14:5050/web")
+                .url("ws://192.168.43.51:5050/web")
                 .build();
 
         WebSocketGolos wsc = new WebSocketGolos();

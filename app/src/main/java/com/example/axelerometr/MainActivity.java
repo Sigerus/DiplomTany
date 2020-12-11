@@ -148,23 +148,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     @Override
                     public void run() {
                         sensorManager.registerListener(listener, sensorAccel,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                         sensorManager.registerListener(listener, sensorLinAccel,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                         sensorManager.registerListener(listener, sensorGravity,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                         sensorManager.registerListener(listener, sensorMagnetic_field,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                         sensorManager.registerListener(listener, magnetometer,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                         sensorManager.registerListener(listener, sensorGyroscopeEirler,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                         sensorManager.registerListener(listener, sensorGyroscope,
-                                SensorManager.SENSOR_DELAY_NORMAL);
+                                SensorManager.SENSOR_DELAY_GAME);
                     }
                 });
             }
         };
+
         timer.schedule(task, 0, period);
         speed.setText(String.valueOf(period));
 
@@ -304,7 +305,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     break;
                 case Sensor.TYPE_ROTATION_VECTOR:
                     synchronized (mFileLock) {
-                        float[] rotationMatrix = new float[16];
+                        float[] Quat = new float[4];
+                        float[] RotVect = new float[] {event.values[0],event.values[1],event.values[2],event.values[3]};
+                        float[] RotMatr = new float[16];
+                        float[] UelerAngles = new float[3];
+
+                        SensorManager.getQuaternionFromVector(Quat,RotVect);
+                        SensorManager.getRotationMatrixFromVector(RotMatr,RotVect);
+                        SensorManager.getOrientation(RotMatr,UelerAngles);
+
+                        /*float[] rotationMatrix = new float[16];
                         SensorManager.getRotationMatrixFromVector(
                                 rotationMatrix, event.values);
                         float[] remappedRotationMatrix = new float[16];
@@ -318,10 +328,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             orientations[i] = (float)(Math.toDegrees(orientations[i]));
                         }
                         tv.setText(String.valueOf((int)orientations[2]));
-                        iv.setRotation(-orientations[2]);
+                        iv.setRotation(-orientations[2]);*/
 
 
-                        String RotStream = String.format("%s%s%s%s%s", "EYR ", SystemClock.elapsedRealtimeNanos() + " ", orientations[0] + " ", orientations[1] + " ", orientations[2]);
+                        /*String RotStream = String.format("%s%s%s%s%s", "EYR ", SystemClock.elapsedRealtimeNanos() + " ", orientations[0] + " ", orientations[1] + " ", orientations[2]);*/
+                        String RotStream = String.format("%s%s%s%s%s", "EYR ", SystemClock.elapsedRealtimeNanos() + " ", UelerAngles[0] + " ", UelerAngles[1] + " ", UelerAngles[2]);
                         try {
                             if (mFileWriter == null) {
                                 return;
