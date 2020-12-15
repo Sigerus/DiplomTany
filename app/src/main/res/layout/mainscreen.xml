@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,94 +10,54 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="52dp"
-        android:layout_marginLeft="52dp"
         android:layout_marginBottom="252dp"
         android:text="Start"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="rotation"
-        android:textColor="@android:color/background_dark"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.837" />
 
     <Button
         android:id="@+id/stoplog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="52dp"
-        android:layout_marginRight="52dp"
         android:layout_marginBottom="252dp"
         android:text="stop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <TextView
-        android:id="@+id/zolupa"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="120dp"
-        android:layout_marginRight="120dp"
-        android:layout_marginBottom="136dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/periodup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="52dp"
-        android:layout_marginLeft="52dp"
-        android:text="+"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.519" />
-
-    <Button
-        android:id="@+id/perioddown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="56dp"
-        android:layout_marginRight="56dp"
-        android:text="-"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <RadioGroup
+        android:id="@+id/RGspeed"
+        android:layout_width="156dp"
+        android:layout_height="139dp"
+        app:layout_constraintBottom_toTopOf="@+id/startlog"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.519" />
-
-    <ImageView
-        android:id="@+id/iv"
-        android:layout_width="258dp"
-        android:layout_height="24dp"
-        app:layout_constraintBottom_toTopOf="@+id/tv"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.287"
-        app:srcCompat="@color/colorPrimary"
-        android:contentDescription="TODO" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/speed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="speed"
-        app:layout_constraintBottom_toTopOf="@+id/tv"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.461"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv"
-        app:layout_constraintVertical_bias="0.485" />
+        <RadioButton
+            android:id="@+id/RBslow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RBslow" />
+
+        <RadioButton
+            android:id="@+id/RBnorm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RBnorm" />
+
+        <RadioButton
+            android:id="@+id/RBfast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RBfast" />
+
+        <RadioButton
+            android:id="@+id/RBultra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RBultra" />
+    </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

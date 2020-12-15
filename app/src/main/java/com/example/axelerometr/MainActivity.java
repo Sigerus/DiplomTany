@@ -23,6 +23,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +50,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private ImageView iv;
     private TextView tv;
     private TextView speed;
+    private RadioGroup RBspeed;
+    private boolean choose = false;
 
 
 
@@ -67,12 +71,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainscreen);
         //tvText = findViewById(R.id.tvText);
-        msText = findViewById(R.id.zolupa);
+
         startlog = findViewById(R.id.startlog);
         stoplog = findViewById(R.id.stoplog);
-        tv = findViewById(R.id.tv);
-        iv = findViewById(R.id.iv);
-        speed = findViewById(R.id.speed);
+
+
+        RBspeed = findViewById(R.id.RGspeed);
+
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -124,50 +130,111 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(listener, sensorAccel,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorLinAccel,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorGravity,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorMagnetic_field,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, magnetometer,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorGyroscopeEirler,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorGyroscope,
-                SensorManager.SENSOR_DELAY_NORMAL);
 
+        RBspeed.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case -1:
+                    Toast.makeText(getApplicationContext(), "Ничего не выбрано",
+                            Toast.LENGTH_SHORT).show();
+                    sensorManager.registerListener(listener, sensorAccel,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorLinAccel,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorGravity,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorMagnetic_field,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, magnetometer,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorGyroscope,
+                            SensorManager.SENSOR_DELAY_NORMAL);
 
-        timer = new Timer();
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        sensorManager.registerListener(listener, sensorAccel,
-                                SensorManager.SENSOR_DELAY_GAME);
-                        sensorManager.registerListener(listener, sensorLinAccel,
-                                SensorManager.SENSOR_DELAY_GAME);
-                        sensorManager.registerListener(listener, sensorGravity,
-                                SensorManager.SENSOR_DELAY_GAME);
-                        sensorManager.registerListener(listener, sensorMagnetic_field,
-                                SensorManager.SENSOR_DELAY_GAME);
-                        sensorManager.registerListener(listener, magnetometer,
-                                SensorManager.SENSOR_DELAY_GAME);
-                        sensorManager.registerListener(listener, sensorGyroscopeEirler,
-                                SensorManager.SENSOR_DELAY_GAME);
-                        sensorManager.registerListener(listener, sensorGyroscope,
-                                SensorManager.SENSOR_DELAY_GAME);
-                    }
-                });
+                    break;
+                case R.id.RBslow:
+                    choose = true;
+                    Toast.makeText(getApplicationContext(), "slow",
+                            Toast.LENGTH_SHORT).show();
+                    sensorManager.registerListener(listener, sensorAccel,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorLinAccel,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorGravity,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorMagnetic_field,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, magnetometer,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(listener, sensorGyroscope,
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                    break;
+                case R.id.RBnorm:
+                    choose = true;
+                    Toast.makeText(getApplicationContext(), "norm",
+                            Toast.LENGTH_SHORT).show();
+                    sensorManager.registerListener(listener, sensorAccel,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(listener, sensorLinAccel,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(listener, sensorGravity,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(listener, sensorMagnetic_field,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(listener, magnetometer,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(listener, sensorGyroscope,
+                            SensorManager.SENSOR_DELAY_UI);
+                    break;
+                case R.id.RBfast:
+                    choose = true;
+                    Toast.makeText(getApplicationContext(), "fast",
+                            Toast.LENGTH_SHORT).show();
+                    sensorManager.registerListener(listener, sensorAccel,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    sensorManager.registerListener(listener, sensorLinAccel,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    sensorManager.registerListener(listener, sensorGravity,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    sensorManager.registerListener(listener, sensorMagnetic_field,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    sensorManager.registerListener(listener, magnetometer,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    sensorManager.registerListener(listener, sensorGyroscope,
+                            SensorManager.SENSOR_DELAY_GAME);
+                    break;
+                case R.id.RBultra:
+                    choose = true;
+                    Toast.makeText(getApplicationContext(), "ultra",
+                            Toast.LENGTH_SHORT).show();
+                    sensorManager.registerListener(listener, sensorAccel,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    sensorManager.registerListener(listener, sensorLinAccel,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    sensorManager.registerListener(listener, sensorGravity,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    sensorManager.registerListener(listener, sensorMagnetic_field,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    sensorManager.registerListener(listener, magnetometer,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    sensorManager.registerListener(listener, sensorGyroscopeEirler,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    sensorManager.registerListener(listener, sensorGyroscope,
+                            SensorManager.SENSOR_DELAY_FASTEST);
+                    break;
+
+                default:
+                    break;
             }
-        };
+        });
 
-        timer.schedule(task, 0, period);
-        speed.setText(String.valueOf(period));
+
 
        /* timer = new Timer();
         TimerTask task = new TimerTask() {
@@ -184,15 +251,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         timer.schedule(task, 0, period);*/
 
 
-    }
-
-    void increasePeriod()
-    {
-        period += 100;
-    }
-    void decreasePeriod()
-    {
-        period -= 100;
     }
 
     @Override
@@ -236,7 +294,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     float[] valuesAccelGravity = new float[3];
     float[] valuesLinAccel = new float[3];
     float[] valuesGravity = new float[3];
-    private float[] mGeomagnetic = new float[3];;
+    private final float[] mGeomagnetic = new float[3];
 
     SensorEventListener listener = new SensorEventListener() {
 
@@ -355,18 +413,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.startlog:
-               // msText.setText("Текстовый файл создан\nИдёт запись логов");
-                writeFileSD();
+                if(choose)
+                {writeFileSD();}
+                else
+                {Toast.makeText(MainActivity.this,"choose speed",Toast.LENGTH_LONG).show();}
             break;
-            case R.id.periodup:
-                increasePeriod();
-                break;
-            case R.id.perioddown:
-                decreasePeriod();
-                break;
             case R.id.stoplog:
-                onStop();
                 Toast.makeText(MainActivity.this,"Логи записаны ",Toast.LENGTH_LONG).show();
+                if(choose)
+                {
+                    onStop();
+                    Toast.makeText(MainActivity.this,"Логи записаны ",Toast.LENGTH_LONG).show();
+                }
+                else
+                {Toast.makeText(MainActivity.this,"choose speed",Toast.LENGTH_LONG).show();}
                 //msText.setText("Логи успешно записаны");
             break;
         }
